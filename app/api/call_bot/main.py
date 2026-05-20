@@ -3,6 +3,7 @@ import asyncio
 import argparse
 import logging
 import os
+import json
 
 from config_loader import load_config, format_message, fetch_job_description
 from browser_automation import PBXAutomation
@@ -287,7 +288,8 @@ async def main():
         "error": "ГРЕШКА",
     }
     data = summary.to_dict()
-    print("\n" + "=" * 60)
+    print(json.dumps(data, ensure_ascii=False), flush=True)
+    """ print("\n" + "=" * 60)
     print(f"  РЕЗУЛТАТ ОТ ОБАЖДАНЕ")
     print("=" * 60)
     print(f"  Телефон:  {data['phone_number']}")
@@ -304,7 +306,7 @@ async def main():
             print()
     print("-" * 60)
     print(f"  JSON: {filepath}")
-    print("=" * 60)
+    print("=" * 60) """
 
 
 if __name__ == "__main__":

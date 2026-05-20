@@ -30,26 +30,33 @@ export default function Home() {
   }, []);
 
   function sendInformation(formData: FormData) {
-    // Test
+    setAnswer("");
 
-    setAnswer(`
-      
-AI Response:
-This is a fake AI-generated answer for testing the frontend UI.
-    `);
+    const events = new EventSource("/api/call_bot");
 
-    // WEBSOCKET SEND
-    /*
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(
-        JSON.stringify({
-          phone: formData.get("phoneNumber"),
-          link: formData.get("link"),
-          questions: formData.get("questions"),
-        }),
-      );
-    }
-    */
+    events.addEventListener("start", (event) => {
+      const data = JSON.parse(event.data);
+      setAnswer((current) => current + data.message + "\n");
+    });
+
+    events.addEventListener("log", (event) => {
+      const data = JSON.parse(event.data);
+      setAnswer((current) => current + data.message);
+    });
+
+    events.addEventListener("result", (event) => {
+      const result = JSON.parse(event.data);
+      setAnswer((current) => current + "\n\nFinal result:\n" + JSON.stringify(result, null, 2));
+    });
+
+    events.addEventListener("error", (event) => {
+      setAnswer((current) => current + "\nBackend stream error\n");
+      events.close();
+    });
+
+    events.addEventListener("done", () => {
+      events.close();
+    });
   }
 
   return (

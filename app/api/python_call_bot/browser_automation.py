@@ -28,7 +28,7 @@ class PBXAutomation:
         self.page = await context.new_page()
 
         # Capture browser console for debugging
-        self.page.on("console", lambda msg: print(f"[BROWSER] {msg.text}") if "BargeIn" in msg.text else None)
+        # self.page.on("console", lambda msg: print(f"[BROWSER] {msg.text}") if "BargeIn" in msg.text else None)
 
         # Inject audio bridge before page loads
         js_path = os.path.join(os.path.dirname(__file__), "audio_bridge.js")

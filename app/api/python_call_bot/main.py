@@ -4,12 +4,16 @@ import argparse
 import logging
 import os
 import json
+import sys
 
 from config_loader import load_config, format_message, fetch_job_description
 from browser_automation import PBXAutomation
 from speech_services import create_tts_service, STTService
 from conversation_engine import ConversationEngine
 from call_summary import CallSummary
+
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("call_bot")

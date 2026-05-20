@@ -44,6 +44,8 @@ export async function GET(request: Request) {
         env: {
           ...process.env,
           PYTHONUNBUFFERED: "1",
+          PYTHONIOENCODING: "utf-8",
+          PYTHONUTF8: "1",
         },
       });
 

@@ -18,7 +18,7 @@ try {
         }
 
         if (Get-Command py -ErrorAction SilentlyContinue) {
-            py -3.11 -m venv .venv
+            py -V:3.11 -m venv .venv
         }
         elseif (Get-Command python -ErrorAction SilentlyContinue) {
             python -m venv .venv

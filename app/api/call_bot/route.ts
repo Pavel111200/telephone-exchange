@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   // Keep the HTTP response open so logs can be pushed as they arrive.
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      const botDir = path.join(process.cwd(), "app", "api", "call_bot");
+      const botDir = path.join(process.cwd(), "app", "api", "python_call_bot");
       const pythonPath =
         process.platform === "win32"
           ? path.join(botDir, ".venv", "Scripts", "python.exe")

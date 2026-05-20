@@ -289,6 +289,7 @@ async def main():
     }
     data = summary.to_dict()
     print(json.dumps(data, ensure_ascii=False), flush=True)
+    
     """ print("\n" + "=" * 60)
     print(f"  РЕЗУЛТАТ ОТ ОБАЖДАНЕ")
     print("=" * 60)

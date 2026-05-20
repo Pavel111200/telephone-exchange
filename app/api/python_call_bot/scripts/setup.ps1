@@ -37,3 +37,5 @@ Write-Host ""
 Write-Host "Setup complete."
 Write-Host "Activate with: .\.venv\Scripts\Activate.ps1"
 Write-Host "Run with:      .\.venv\Scripts\python.exe main.py"
+
+Read-Host "Press Enter to close"

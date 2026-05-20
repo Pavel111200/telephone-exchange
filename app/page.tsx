@@ -1,48 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Output from "./output";
 import CallForm from "./CallForm";
 
 export default function Home() {
-  const [ws, setWs] = useState<WebSocket>();
   const [answer, setAnswer] = useState("");
 
-  useEffect(() => {
-    const websocket = new WebSocket("ws://localhost:8080");
-    setWs(websocket);
-
-    websocket.onopen = () => {
-      console.log("Connection established");
-    };
-
-    websocket.onmessage = (event) => {
-      setAnswer(event.data);
-    };
-
-    websocket.onclose = () => {
-      setAnswer("");
-    };
-
-    return () => {
-      websocket.close();
-    };
-  }, []);
-
   function sendInformation(formData: FormData) {
-    setAnswer(
-      `AI Response: This is a fake AI-generated answer for testing the frontend UI.`,
-    );
-    
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(
-        JSON.stringify({
-          phone: formData.get("phoneNumber"),
-          link: formData.get("link"),
-          questions: formData.get("questions"),
-        }),
-      );
-    }
+    const events = new EventSource("/api/call_bot");
+
+    events.addEventListener("start", (event) => {
+      const data = JSON.parse(event.data);
+      setAnswer((current) => current + data.message + "\n");
+    });
+
+    events.addEventListener("log", (event) => {
+      const data = JSON.parse(event.data);
+      setAnswer((current) => current + data.message);
+    });
+
+    events.addEventListener("result", (event) => {
+      const result = JSON.parse(event.data);
+      setAnswer((current) => current + "\n\nFinal result:\n" + JSON.stringify(result, null, 2));
+    });
+
+    events.addEventListener("error", (event) => {
+      setAnswer((current) => current + "\nBackend stream error\n");
+      events.close();
+    });
+
+    events.addEventListener("done", () => {
+      events.close();
+    });
   }
 
   return (

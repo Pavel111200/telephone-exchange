@@ -22,7 +22,7 @@ export default function Home() {
 
     events.addEventListener("result", (event) => {
       const data = JSON.parse(event.data);
-      
+
       const result = formatResult(data);
       setAnswer((current) => current + "\n\nFinal result:\n" + result);
     });

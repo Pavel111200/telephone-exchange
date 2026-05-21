@@ -1,8 +1,35 @@
+'use client';
+
+import { useState } from "react";
+import { CiSquarePlus } from "react-icons/ci";
+import { JSX } from "react/jsx-runtime";
+
 const CallForm = ({
   sendInformation,
 }: {
   sendInformation: (formData: FormData) => void;
 }) => {
+  const [numberOfQuestions, setNumberOfQuestions] = useState(2);
+
+  function createQuestionInputs(count: number) : JSX.Element[] {
+    const elements = [];
+
+    for (let index = 0; index < count; index++) {
+      const element = <textarea
+            id={`question-${index + 1}`}
+            name={`question${index + 1}`}
+            rows={2}
+            required
+            key={index + 1}
+            className="bg-white text-black rounded-xs"
+          ></textarea>
+
+      elements.push(element);
+    }
+
+    return elements;
+  }
+
   return (
     <form
       action={sendInformation}
@@ -37,17 +64,12 @@ const CallForm = ({
       </div>
 
       <div className="flex flex-col">
-        <label htmlFor="questions" className="text-white">
-          Questions
-        </label>
+        <label className="text-white">Questions</label>
 
-        <textarea
-          id="questions"
-          name="questions"
-          rows={4}
-          required
-          className="bg-white text-black rounded-xs"
-        ></textarea>
+        <div className="flex flex-col gap-3">
+          {createQuestionInputs(numberOfQuestions)}
+          <CiSquarePlus size={36} onClick={() => setNumberOfQuestions(count => count + 1)} className="cursor-pointer"/>
+        </div>
       </div>
 
       <button

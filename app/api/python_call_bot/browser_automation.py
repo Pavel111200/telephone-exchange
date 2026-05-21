@@ -2,8 +2,10 @@
 import asyncio
 import base64
 import os
-from playwright.async_api import async_playwright, Page, Browser
+from playwright.async_api import async_playwright, Page, Browser, Error as PlaywrightError
 
+class CallEnded(Exception):
+    pass
 
 class PBXAutomation:
     def __init__(self, config: dict):
@@ -82,7 +84,7 @@ class PBXAutomation:
     async def wait_for_call_connected(self, timeout: int = 30000):
         """Wait until the remote party answers (remote audio stream appears)."""
         for _ in range(timeout // 500):
-            has_audio = await self.page.evaluate("window.__callbot_hasRemoteAudio()")
+            has_audio = await self.safe_evaluate("window.__callbot_hasRemoteAudio()")
             if has_audio:
                 return True
             await asyncio.sleep(0.5)
@@ -91,34 +93,46 @@ class PBXAutomation:
     async def play_tts_audio(self, audio_bytes: bytes):
         """Play TTS audio through the fake mic (into the WebRTC call)."""
         b64 = base64.b64encode(audio_bytes).decode("ascii")
-        await self.page.evaluate(f"window.__callbot_playAudio('{b64}')")
+        await self.safe_evaluate(f"window.__callbot_playAudio('{b64}')")
 
     async def play_tts_audio_with_barge_in(self, audio_bytes: bytes) -> dict:
         """Play TTS audio with barge-in detection. Returns {'interrupted': bool}."""
         b64 = base64.b64encode(audio_bytes).decode("ascii")
-        result = await self.page.evaluate(f"window.__callbot_playAudioWithBargeIn('{b64}')")
+        result = await self.safe_evaluate(f"window.__callbot_playAudioWithBargeIn('{b64}')")
         return result
 
     async def start_recording(self):
         """Start recording remote audio."""
-        await self.page.evaluate("window.__callbot_startRecording()")
+        await self.safe_evaluate("window.__callbot_startRecording()")
 
     async def get_speech_state(self) -> str:
         """Get speech detection state: 'waiting', 'speaking', or 'ended'."""
-        return await self.page.evaluate("window.__callbot_getSpeechState()")
+        return await self.safe_evaluate("window.__callbot_getSpeechState()")
 
     async def stop_recording(self) -> bytes | None:
         """Stop recording and return audio bytes."""
-        b64 = await self.page.evaluate("window.__callbot_stopRecording()")
+        b64 = await self.safe_evaluate("window.__callbot_stopRecording()")
         if not b64:
             return None
         return base64.b64decode(b64)
 
     async def hangup(self):
-        """Click hangup button."""
+        """Click hangup button if the call is still active."""
+        if not self.page or self.page.is_closed():
+            return
+
         hangup_btn = self.page.locator('a#hangup')
-        if await hangup_btn.count() > 0:
-            await hangup_btn.click()
+
+        try:
+            if await hangup_btn.count() == 0:
+                return
+
+            if not await hangup_btn.is_visible(timeout=1000):
+                return
+
+            await hangup_btn.click(timeout=1000)
+        except PlaywrightError:
+            return
 
     async def close(self):
         """Close browser."""
@@ -126,3 +140,17 @@ class PBXAutomation:
             await self.browser.close()
         if self._playwright:
             await self._playwright.stop()
+            
+    async def safe_evaluate(self, expression: str):
+        try:
+            return await self.page.evaluate(expression)
+        except PlaywrightError as e:
+            msg = str(e)
+            if (
+                "Execution context was destroyed" in msg
+                or "Target page" in msg
+                or "Target closed" in msg
+                or self.page.is_closed()
+            ):
+                raise CallEnded("Call ended") from e
+            raise

@@ -7,7 +7,7 @@ import json
 import sys
 
 from config_loader import load_config, format_message, fetch_job_description
-from browser_automation import PBXAutomation
+from browser_automation import PBXAutomation, CallEnded
 from speech_services import create_tts_service, STTService
 from conversation_engine import ConversationEngine
 from call_summary import CallSummary
@@ -257,6 +257,9 @@ async def run_call(config: dict):
         await asyncio.sleep(1)
         await pbx.hangup()
 
+    except CallEnded:
+        log.info("Remote party ended the call")
+        summary.set_outcome("ended_early")
     except Exception as e:
         log.error(f"Error during call: {e}")
         summary.set_outcome("error")

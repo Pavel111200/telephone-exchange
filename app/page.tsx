@@ -8,7 +8,15 @@ export default function Home() {
   const [answer, setAnswer] = useState("");
 
   function sendInformation(formData: FormData) {
-    const events = new EventSource("/api/call_bot");
+    //Set params
+    const params = new URLSearchParams({
+      phoneNumber: String(formData.get("phoneNumber") ?? ""),
+      link: String(formData.get("link") ?? ""),
+      questions: String(formData.get("questions") ?? ""),
+    });
+
+    //Send req
+    const events = new EventSource(`/api/call_bot?${params}`);
 
     events.addEventListener("start", (event) => {
       const data = JSON.parse(event.data);

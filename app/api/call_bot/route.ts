@@ -12,6 +12,20 @@ function sse(event: string, data: unknown) {
 export async function GET(request: Request) {
   const encoder = new TextEncoder();
 
+  //Get the req params
+  const searchParams = new URL(request.url).searchParams;
+  const phoneNumber = searchParams.get("phoneNumber");
+  const link = searchParams.get("link");
+  const questions = searchParams.get("questions") ?? "";
+
+  //Phone and link are reqired
+  if (!phoneNumber || !link) {
+    return Response.json(
+      { error: "phoneNumber and link are required" },
+      { status: 400 }
+    );
+  }
+
   // Keep the HTTP response open so logs can be pushed as they arrive.
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -38,16 +52,21 @@ export async function GET(request: Request) {
         }
       };
 
+      // start the python bot with the passed parameters
       // -u and PYTHONUNBUFFERED make Python logs stream immediately.
-      const child = spawn(pythonPath, ["-u", scriptPath], {
-        cwd: botDir,
-        env: {
-          ...process.env,
-          PYTHONUNBUFFERED: "1",
-          PYTHONIOENCODING: "utf-8",
-          PYTHONUTF8: "1",
-        },
-      });
+      const child = spawn(
+        pythonPath,
+        ["-u", scriptPath, "--phone-number", phoneNumber, "--link", link, "--questions", questions],
+        {
+          cwd: botDir,
+          env: {
+            ...process.env,
+            PYTHONUNBUFFERED: "1",
+            PYTHONIOENCODING: "utf-8",
+            PYTHONUTF8: "1",
+          },
+        }
+      );
 
       // Stop the Python process if the frontend closes the SSE connection.
       request.signal.addEventListener("abort", () => {
@@ -55,7 +74,9 @@ export async function GET(request: Request) {
         close();
       });
 
-      send("start", { message: "Call bot started" });
+      send("start", {
+        message: `Call bot started: Phone number: ${phoneNumber}, Link: ${link}, Questions: ${questions}`
+      });
 
       // Build the final response
       let stdoutBuffer = "";

@@ -18,13 +18,27 @@ export async function GET(request: Request) {
   const link = searchParams.get("link");
   const questions = searchParams.get("questions") ?? "";
 
-  //Phone and link are reqired
+  //Validation - Phone and link are reqired
   if (!phoneNumber || !link) {
-    return Response.json(
-      { error: "phoneNumber and link are required" },
-      { status: 400 }
-    );
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(
+          encoder.encode(sse("validation-error", { message: "Phone number and link are required" }))
+        );
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
+    });
   }
+
 
   // Keep the HTTP response open so logs can be pushed as they arrive.
   const stream = new ReadableStream<Uint8Array>({
@@ -56,7 +70,7 @@ export async function GET(request: Request) {
       // -u and PYTHONUNBUFFERED make Python logs stream immediately.
       const child = spawn(
         pythonPath,
-        ["-u", scriptPath, "--phone-number", phoneNumber, "--link", link, "--questions", questions],
+        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", link, "--questions", questions],
         {
           cwd: botDir,
           env: {

@@ -18,27 +18,39 @@ export default function Home() {
     //Send req
     const events = new EventSource(`/api/call_bot?${params}`);
 
+    //handle start
     events.addEventListener("start", (event) => {
       const data = JSON.parse(event.data);
       setAnswer((current) => current + data.message + "\n");
     });
 
+    //handle logs
     events.addEventListener("log", (event) => {
       const data = JSON.parse(event.data);
       setAnswer((current) => current + data.message);
     });
 
+    //handle the returned result => JSON
     events.addEventListener("result", (event) => {
       const result = JSON.parse(event.data);
       setAnswer((current) => current + "\n\nFinal result:\n" + JSON.stringify(result, null, 2));
     });
 
-    events.addEventListener("error", (event) => {
-      setAnswer((current) => current + "\nBackend stream error\n");
+    //Handle finish
+    events.addEventListener("done", () => {
       events.close();
     });
 
-    events.addEventListener("done", () => {
+    //handle validation error
+    events.addEventListener("validation-error", (event) => {
+      const data = JSON.parse(event.data);
+      setAnswer((current) => current + "\n" + data.message + "\n");
+      events.close();
+    });
+
+    //Handle general errors
+    events.addEventListener("error", (event) => {
+      setAnswer((current) => current + "\nBackend stream error\n");
       events.close();
     });
   }

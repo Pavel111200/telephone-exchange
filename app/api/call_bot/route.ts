@@ -9,36 +9,54 @@ function sse(event: string, data: unknown) {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
+function getErrorResponse(responseType: string, msg: string, encoder: TextEncoder) {
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(
+        encoder.encode(sse(responseType, { message: msg }))
+      );
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
 export async function GET(request: Request) {
   const encoder = new TextEncoder();
 
   //Get the req params
   const searchParams = new URL(request.url).searchParams;
-  const phoneNumber = searchParams.get("phoneNumber");
-  const link = searchParams.get("link");
+  const phoneNumber = searchParams.get("phoneNumber") ?? "";
+  const jobLink = searchParams.get("link") ?? "";
   const questions = searchParams.get("questions") ?? "";
 
   //Validation - Phone and link are reqired
-  if (!phoneNumber || !link) {
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(
-          encoder.encode(sse("validation-error", { message: "Phone number and link are required" }))
-        );
-        controller.close();
-      },
-    });
-
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/event-stream; charset=utf-8",
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-        "X-Accel-Buffering": "no",
-      },
-    });
+  if (!phoneNumber || !jobLink) {
+    return getErrorResponse("validation-error", "Phone number and link are required", encoder);
   }
 
+  //Get possition and title from link
+  const apiUrl = new URL("https://bg.jobee.bg/api/callcenter_calls.php");
+  apiUrl.searchParams.set("link", jobLink);
+  const res = await fetch(apiUrl.toString());
+  const data = await res.json();
+
+  //Validate that link is real
+  if (data.status == "not_found") {
+    return getErrorResponse("validation-error", "Job posting wasn't found", encoder);
+  }
+
+  //Extract data
+  const jobTitle = data.position_title;
+  const jobCompany = data.company;
 
   // Keep the HTTP response open so logs can be pushed as they arrive.
   const stream = new ReadableStream<Uint8Array>({
@@ -70,7 +88,7 @@ export async function GET(request: Request) {
       // -u and PYTHONUNBUFFERED make Python logs stream immediately.
       const child = spawn(
         pythonPath,
-        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", link, "--questions", questions],
+        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", jobLink, "--job-title", jobTitle, "--job-company", jobCompany , "--questions", questions],
         {
           cwd: botDir,
           env: {
@@ -89,7 +107,7 @@ export async function GET(request: Request) {
       });
 
       send("start", {
-        message: `Call bot started: Phone number: ${phoneNumber}, Link: ${link}, Questions: ${questions}`
+        message: `Call bot started: Phone number: ${phoneNumber}, Link: ${jobLink}, Questions: ${questions}`
       });
 
       // Build the final response

@@ -17,6 +17,13 @@ sys.stderr.reconfigure(encoding="utf-8")
 
 # logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+# don't log HTTP Requests and Gemini logs
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("elevenlabs").setLevel(logging.WARNING)
+logging.getLogger("google.genai").setLevel(logging.WARNING)
+
 log = logging.getLogger("call_bot")
 
 

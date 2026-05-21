@@ -21,8 +21,10 @@ export default function Home() {
     });
 
     events.addEventListener("result", (event) => {
-      const result = JSON.parse(event.data);
-      setAnswer((current) => current + "\n\nFinal result:\n" + JSON.stringify(result, null, 2));
+      const data = JSON.parse(event.data);
+      
+      const result = formatResult(data);
+      setAnswer((current) => current + "\n\nFinal result:\n" + result);
     });
 
     events.addEventListener("error", (event) => {
@@ -35,11 +37,32 @@ export default function Home() {
     });
   }
 
+  function formatResult(data: any): string {
+    const phoneNumber = data.phone_number;
+    const jobPosition = data.job_posting.position;
+    const company = data.job_posting.company;
+    const link = data.job_posting.url;
+    const result = data.summary;
+
+    return `Кандидат: ${phoneNumber}
+Позиция: ${jobPosition}
+Работодател: ${company}
+Линк към обявата: ${link}
+Отговор на кандидата: ${result}`;
+  }
+
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-center py-32 px-16 gap-6">
-        <CallForm sendInformation={sendInformation} />
-        {answer && <Output answer={answer} />}
+        {!answer && <CallForm sendInformation={sendInformation} />}
+        {answer && (
+          <>
+            <Output answer={answer} />
+            <button className="text-black rounded-sm border border-black p-2" onClick={() => setAnswer("")}>
+              New call
+            </button>
+          </>
+        )}
       </main>
     </div>
   );

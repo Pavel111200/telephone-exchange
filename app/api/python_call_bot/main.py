@@ -285,18 +285,22 @@ async def main():
     parser.add_argument("--job-title", help="Override position from config")
     parser.add_argument("--job-company", help="Override company from config")
     parser.add_argument("--job-link", help="Override url from config")
+    parser.add_argument("--question", action="append", default=[], help="Questions, if any")
 
     args = parser.parse_args()
 
     config = load_config(args.config)
-    if args.phone:
+    if args.phone: #set phone
         config["call"]["phone_number"] = args.phone
-    if args.job_title:
+    if args.job_title: #set job title
         config["call"]["job_posting"]["position"] = args.job_title
-    if args.job_company:
+    if args.job_company: #set company name
         config["call"]["job_posting"]["company"] = args.job_company
-    if args.job_link:
+    if args.job_link: #set link to job offering
         config["call"]["job_posting"]["url"] = args.job_link
+    if args.question: #set questions
+        config["questions"] = args.question
+        
 
     summary = await run_call(config)
     filepath = summary.save(args.output)

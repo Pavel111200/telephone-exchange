@@ -86,9 +86,10 @@ export async function GET(request: Request) {
 
       // start the python bot with the passed parameters
       // -u and PYTHONUNBUFFERED make Python logs stream immediately.
+      const questionArgs = questions.flatMap(q => ["--question", q]); //make each question into an arg
       const child = spawn(
         pythonPath,
-        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", jobLink, "--job-title", jobTitle, "--job-company", jobCompany],
+        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", jobLink, "--job-title", jobTitle, "--job-company", jobCompany, ...questionArgs],
         {
           cwd: botDir,
           env: {

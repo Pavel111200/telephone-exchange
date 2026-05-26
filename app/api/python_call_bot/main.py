@@ -282,11 +282,21 @@ async def main():
     parser.add_argument("--config", default="config.yaml", help="Path to config file")
     parser.add_argument("--output", default="output", help="Output directory for call summaries")
     parser.add_argument("--phone", help="Override phone number from config")
+    parser.add_argument("--job-title", help="Override position from config")
+    parser.add_argument("--job-company", help="Override company from config")
+    parser.add_argument("--job-link", help="Override url from config")
+
     args = parser.parse_args()
 
     config = load_config(args.config)
     if args.phone:
         config["call"]["phone_number"] = args.phone
+    if args.job_title:
+        config["call"]["job_posting"]["position"] = args.job_title
+    if args.job_company:
+        config["call"]["job_posting"]["company"] = args.job_company
+    if args.job_link:
+        config["call"]["job_posting"]["url"] = args.job_link
 
     summary = await run_call(config)
     filepath = summary.save(args.output)

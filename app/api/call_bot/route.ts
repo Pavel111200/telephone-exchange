@@ -45,7 +45,7 @@ export async function GET(request: Request) {
 
   //Get possition and title from link
   const apiUrl = new URL("https://bg.jobee.bg/api/callcenter_calls.php");
-  apiUrl.searchParams.set("link", jobLink);
+  apiUrl.searchParams.set("url", jobLink);
   const res = await fetch(apiUrl.toString());
   const data = await res.json();
 
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
       // -u and PYTHONUNBUFFERED make Python logs stream immediately.
       const child = spawn(
         pythonPath,
-        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", jobLink, "--job-title", jobTitle, "--job-company", jobCompany , "--questions", questions],
+        ["-u", scriptPath, "--phone", phoneNumber, "--job-link", jobLink, "--job-title", jobTitle, "--job-company", jobCompany],
         {
           cwd: botDir,
           env: {

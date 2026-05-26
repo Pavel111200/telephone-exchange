@@ -35,8 +35,8 @@ export async function GET(request: Request) {
   //Get the req params
   const searchParams = new URL(request.url).searchParams;
   const phoneNumber = searchParams.get("phoneNumber") ?? "";
-  const jobLink = searchParams.get("link") ?? "";
-  const questions = searchParams.get("questions") ?? "";
+  const jobLink = searchParams.get("link") ?? ""; 
+  const questions = searchParams.getAll("questions").map(q => q.toString().trim()).filter(q => q !== "");
 
   //Validation - Phone and link are reqired
   if (!phoneNumber || !jobLink) {

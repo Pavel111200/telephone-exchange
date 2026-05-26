@@ -9,11 +9,14 @@ export default function Home() {
 
   function sendInformation(formData: FormData) {
     //Set params
-    const params = new URLSearchParams({
-      phoneNumber: String(formData.get("phoneNumber") ?? ""),
-      link: String(formData.get("link") ?? ""),
-      questions: String(formData.get("questions") ?? ""),
-    });
+    const params = new URLSearchParams();
+    params.set("phoneNumber", String(formData.get("phoneNumber") ?? ""));
+    params.set("link", String(formData.get("link") ?? ""));
+    const questions = formData
+      .getAll("questions")
+      .map(q => q.toString().trim())
+      .filter(q => q !== "");
+    questions.forEach(q => params.append("questions", q));
 
     //Send req
     const events = new EventSource(`/api/call_bot?${params}`);
@@ -59,18 +62,16 @@ export default function Home() {
 
   function formatResult(data: any): string {
     const phoneNumber = data.phone_number;
-    const timestamp = new Date(data.timestamp).toLocaleString("bg-BG");
     const jobPosition = data.job_posting.position;
     const company = data.job_posting.company;
     const link = data.job_posting.url;
     const result = data.summary;
 
     return `Кандидат: ${phoneNumber}
-Дата и час: ${timestamp}
 Позиция: ${jobPosition}
 Работодател: ${company}
 Линк към обявата: ${link}
-Резултат: ${result}`;
+Отговор на кандидата: ${result}`;
   }
 
   return (
@@ -80,10 +81,7 @@ export default function Home() {
         {answer && (
           <>
             <Output answer={answer} />
-            <button
-              className="text-black rounded-sm border border-black p-2"
-              onClick={() => setAnswer("")}
-            >
+            <button className="text-black rounded-sm border border-black p-2" onClick={() => setAnswer("")}>
               New call
             </button>
           </>

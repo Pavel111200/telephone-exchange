@@ -39,16 +39,18 @@ export default function Home() {
 
   function formatResult(data: any): string {
     const phoneNumber = data.phone_number;
+    const timestamp = new Date(data.timestamp).toLocaleString("bg-BG");
     const jobPosition = data.job_posting.position;
     const company = data.job_posting.company;
     const link = data.job_posting.url;
     const result = data.summary;
 
     return `Кандидат: ${phoneNumber}
+Дата и час: ${timestamp}
 Позиция: ${jobPosition}
 Работодател: ${company}
 Линк към обявата: ${link}
-Отговор на кандидата: ${result}`;
+Резултат: ${result}`;
   }
 
   return (
@@ -58,7 +60,10 @@ export default function Home() {
         {answer && (
           <>
             <Output answer={answer} />
-            <button className="text-black rounded-sm border border-black p-2" onClick={() => setAnswer("")}>
+            <button
+              className="text-black rounded-sm border border-black p-2"
+              onClick={() => setAnswer("")}
+            >
               New call
             </button>
           </>

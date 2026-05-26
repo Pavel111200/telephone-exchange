@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Set up
+
+1. Run one of the scripts in app\api\python_call_bot\scripts based on your operating system.
+
+2. Add your config.yaml, gcloud-credentials.json and .env files in app\api\python_call_bot 
+
 ## Getting Started
 
 First, run the development server:

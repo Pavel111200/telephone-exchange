@@ -19,7 +19,6 @@ const CallForm = ({
             id={`question-${index + 1}`}
             name={`question${index + 1}`}
             rows={2}
-            required
             key={index + 1}
             className="bg-white text-black rounded-xs"
           ></textarea>

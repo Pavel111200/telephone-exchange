@@ -20,7 +20,7 @@ const CallForm = ({
             name='questions'
             rows={2}
             key={index + 1}
-            className="bg-white text-black rounded-xs"
+            className="bg-gray-200/75 text-black rounded-sm p-1"
           ></textarea>
 
       elements.push(element);
@@ -32,11 +32,11 @@ const CallForm = ({
   return (
     <form
       action={sendInformation}
-      className="flex flex-col bg-black p-4 gap-4 rounded-md w-4/5"
+      className="flex flex-col bg-white shadow-xl/30 p-4 gap-4 rounded-md w-1/2"
     >
       <div className="flex flex-col">
-        <label htmlFor="phone-number" className="text-white">
-          Phone number
+        <label htmlFor="phone-number" className="text-black">
+          Phone number:
         </label>
 
         <input
@@ -44,13 +44,13 @@ const CallForm = ({
           id="phone-number"
           name="phoneNumber"
           required
-          className="bg-white text-black rounded-xs h-7"
+          className="bg-gray-200/75 text-black rounded-sm h-7 p-1"
         />
       </div>
 
       <div className="flex flex-col">
-        <label htmlFor="link" className="text-white">
-          Link to job posting
+        <label htmlFor="link" className="text-black">
+          Link to job posting:
         </label>
 
         <input
@@ -58,22 +58,22 @@ const CallForm = ({
           id="link"
           name="link"
           required
-          className="bg-white text-black rounded-xs h-7"
+          className="bg-gray-200/75 text-black rounded-sm h-7 p-1"
         />
       </div>
 
       <div className="flex flex-col">
-        <label className="text-white">Questions</label>
+        <label className="text-black">Questions:</label>
 
         <div className="flex flex-col gap-3">
           {createQuestionInputs(numberOfQuestions)}
-          <CiSquarePlus size={36} onClick={() => setNumberOfQuestions(count => count + 1)} className="cursor-pointer"/>
+          <CiSquarePlus size={36} onClick={() => setNumberOfQuestions(count => count + 1)} className="cursor-pointer text-purple"/>
         </div>
       </div>
 
       <button
         type="submit"
-        className="w-fit self-end px-5 py-2 bg-white text-black rounded-sm"
+        className="px-5 py-2 bg-purple text-white rounded-sm"
       >
         Submit
       </button>
